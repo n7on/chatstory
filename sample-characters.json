@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Sarah Chen",
+    "slug": "sarah-chen",
+    "role": "CEO",
+    "avatar": "",
+    "character_traits": "Visionary leader, strategic thinker, enthusiastic about innovation"
+  },
+  {
+    "name": "Mike Rodriguez",
+    "slug": "mike-rodriguez",
+    "role": "Lead Developer",
+    "avatar": "",
+    "character_traits": "Technical expert, problem solver, enjoys clean code and best practices"
+  },
+  {
+    "name": "Emma Thompson",
+    "slug": "emma-thompson",
+    "role": "UX Designer",
+    "avatar": "",
+    "character_traits": "Creative, user-focused, passionate about great design and user experience"
+  },
+  {
+    "name": "James Wilson",
+    "slug": "james-wilson",
+    "role": "Product Manager",
+    "avatar": "",
+    "character_traits": "Organized, detail-oriented, bridges communication between teams"
+  }
+]

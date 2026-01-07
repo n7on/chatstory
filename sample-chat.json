@@ -1,0 +1,139 @@
+{
+  "chat": {
+    "title": "Project Kickoff - New Mobile App",
+    "description": "Our team discusses the new mobile app project and initial planning"
+  },
+  "messages": [
+    {
+      "character": "sarah-chen",
+      "message": "Good morning everyone! 🎉 Excited to kick off our new mobile app project today!",
+      "timestamp": "9:00 AM",
+      "start_time": 0,
+      "reactions": [
+        {
+          "character": "mike-rodriguez",
+          "reaction": "👍",
+          "start_time": 1.5
+        },
+        {
+          "character": "emma-thompson",
+          "reaction": "🎉",
+          "start_time": 2
+        }
+      ]
+    },
+    {
+      "character": "james-wilson",
+      "message": "Morning! I've prepared the initial requirements doc. Let me share the key features we need to build.",
+      "timestamp": "9:02 AM",
+      "start_time": 3
+    },
+    {
+      "character": "emma-thompson",
+      "message": "Can't wait to see what we're building! I've been sketching some early concepts.",
+      "timestamp": "9:03 AM",
+      "start_time": 6
+    },
+    {
+      "character": "mike-rodriguez",
+      "message": "Let's make sure we discuss the tech stack early on. I'm thinking React Native for cross-platform support.",
+      "timestamp": "9:05 AM",
+      "start_time": 10,
+      "reactions": [
+        {
+          "character": "sarah-chen",
+          "reaction": "👏",
+          "start_time": 12
+        }
+      ]
+    },
+    {
+      "character": "james-wilson",
+      "message": "Great idea Mike. Here are the main features:\n\n1. User authentication\n2. Real-time notifications\n3. Social sharing\n4. Offline mode",
+      "timestamp": "9:07 AM",
+      "start_time": 15,
+      "reactions": [
+        {
+          "character": "james-wilson",
+          "reaction": "🔥",
+          "start_time": 18
+        }
+      ]
+    },
+    {
+      "character": "emma-thompson",
+      "message": "For the UI, I'm proposing a clean, minimalist design with dark mode support. Research shows our target users prefer it.",
+      "timestamp": "9:10 AM",
+      "start_time": 22,
+      "reactions": [
+        {
+          "character": "mike-rodriguez",
+          "reaction": "❤️",
+          "start_time": 24
+        }
+      ]
+    },
+    {
+      "character": "mike-rodriguez",
+      "message": "Dark mode is definitely doable. We should also consider accessibility from day one.",
+      "timestamp": "9:12 AM",
+      "start_time": 28,
+      "reactions": [
+        {
+          "character": "sarah-chen",
+          "reaction": "👍",
+          "start_time": 30
+        }
+      ]
+    },
+    {
+      "character": "sarah-chen",
+      "message": "Love where this is going! Timeline-wise, when can we have an MVP ready?",
+      "timestamp": "9:15 AM",
+      "start_time": 33
+    },
+    {
+      "character": "james-wilson",
+      "message": "If we scope it right, I'd say 8-10 weeks for MVP. That includes testing and polish.",
+      "timestamp": "9:17 AM",
+      "start_time": 38
+    },
+    {
+      "character": "mike-rodriguez",
+      "message": "Sounds realistic. I'll need a week for architecture planning and setting up the development environment.",
+      "timestamp": "9:18 AM",
+      "start_time": 42
+    },
+    {
+      "character": "emma-thompson",
+      "message": "I can have initial designs and prototypes ready in 2 weeks. That should give development a head start.",
+      "timestamp": "9:20 AM",
+      "start_time": 47,
+      "reactions": [
+        {
+          "character": "emma-thompson",
+          "reaction": "👍",
+          "start_time": 49
+        }
+      ]
+    },
+    {
+      "character": "sarah-chen",
+      "message": "Perfect! Let's plan a follow-up meeting next week to review the designs. Great start team! 💪",
+      "timestamp": "9:25 AM",
+      "start_time": 52,
+      "reactions": [
+        {
+          "character": "james-wilson",
+          "reaction": "🎉",
+          "start_time": 54
+        },
+        {
+          "character": "mike-rodriguez",
+          "reaction": "💪",
+          "start_time": 54.5
+        }
+      ]
+    }
+  ]
+}
