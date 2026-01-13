@@ -12,20 +12,22 @@ jQuery(document).ready(function ($) {
   });
 
   function loadChat(container, chatId) {
-    $.post(ChatStoryAjax.ajax_url, {
-      action: "chatstory_get_chat_frontend",
-      id: chatId,
-      _nocache: Date.now(),
+    $.ajax({
+      url: ChatStoryAjax.rest_url + 'chats/' + chatId + '/frontend',
+      method: 'GET',
+      dataType: 'json',
+      cache: false
     })
-      .done(function (response) {
-        if (response.success && response.data.chat) {
-          initLivePlayback(container, response.data);
+      .done(function (data) {
+        if (data && data.chat) {
+          initLivePlayback(container, data);
         } else {
-          showError(container, response.data?.message || "Failed to load chat");
+          showError(container, data?.message || "Failed to load chat");
         }
       })
-      .fail(function () {
-        showError(container, "Failed to load chat");
+      .fail(function (xhr) {
+        const message = xhr.responseJSON?.message || "Failed to load chat";
+        showError(container, message);
       });
   }
 

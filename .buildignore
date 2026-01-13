@@ -1,0 +1,16 @@
+.git/
+.gitignore
+.buildignore
+build.sh
+build/
+node_modules/
+apa/
+*.zip
+.DS_Store
+composer.lock
+.env
+.editorconfig
+phpcs.xml
+.phpcs.xml.dist
+tests/
+.github/

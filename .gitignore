@@ -1,1 +1,5 @@
 apa
+/vendor/
+composer.lock
+node_modules/
+*.zip

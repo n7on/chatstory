@@ -87,11 +87,96 @@ Import complete chats with characters and messages:
 
 See `sample-chat.json` and `sample-character.json` for a complete example. Basic structure:
 
+## MCP Integration (AI Access)
+
+ChatStory includes built-in support for the Model Context Protocol (MCP), allowing AI assistants like Claude to manage your chats and characters programmatically.
+
+### Setup
+
+1. **Install Dependencies** (if not already done):
+   ```bash
+   composer install
+   ```
+
+2. **Configure Your AI Assistant**:
+
+   **For Claude Desktop** (or other MCP clients), add to your configuration:
+
+   **Via HTTP:**
+   ```json
+   {
+     "mcpServers": {
+       "chatstory": {
+         "command": "npx",
+         "args": ["-y", "@automattic/mcp-wordpress-remote", "http://your-site.com/wp-json/mcp/mcp-adapter-default-server"],
+         "env": {
+           "WP_USERNAME": "your-admin-username",
+           "WP_APPLICATION_PASSWORD": "your-app-password"
+         }
+       }
+     }
+   }
+   ```
+
+   **Via WP-CLI:**
+   ```json
+   {
+     "mcpServers": {
+       "chatstory": {
+         "command": "wp",
+         "args": ["mcp-adapter", "serve", "--server=mcp-adapter-default-server", "--user=admin"],
+         "cwd": "/path/to/wordpress"
+       }
+     }
+   }
+   ```
+
+3. **Create WordPress Application Password**:
+   - Go to WordPress Admin → Users → Your Profile
+   - Scroll to "Application Passwords"
+   - Create a new application password for MCP access
+
+### Available MCP Tools
+
+Once configured, AI assistants can use these tools:
+
+**Characters:**
+- `chatstory/list-characters` - List all characters
+- `chatstory/get-character` - Get a specific character
+- `chatstory/create-character` - Create a new character
+- `chatstory/update-character` - Update a character
+- `chatstory/delete-character` - Delete a character
+
+**Chats:**
+- `chatstory/list-chats` - List all chats
+- `chatstory/get-chat` - Get a chat with all messages
+- `chatstory/create-chat` - Create a new chat
+- `chatstory/update-chat` - Update a chat
+- `chatstory/delete-chat` - Delete a chat
+
+**Messages:**
+- `chatstory/list-messages` - List messages in a chat
+- `chatstory/get-message` - Get a specific message
+- `chatstory/create-message` - Create a new message
+- `chatstory/update-message` - Update a message
+- `chatstory/delete-message` - Delete a message
+
+### Example Usage with AI
+
+Once configured, you can ask your AI assistant:
+
+- "List all ChatStory characters"
+- "Create a new character named John Doe with role CEO"
+- "Create a new chat titled 'Team Standup'"
+- "Add a message to chat #1 from character #2 saying 'Hello team!'"
+- "Show me all messages in chat #3"
+
 ## Requirements
 
 - WordPress 5.0 or higher
 - PHP 7.0 or higher
 - MySQL 5.6 or higher
+- Composer (for MCP integration)
 
 ## License
 MIT

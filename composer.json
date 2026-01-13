@@ -1,0 +1,20 @@
+{
+    "name": "chatstory/chatstory",
+    "description": "Tell your company story through recorded team chat conversations",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.0",
+        "wordpress/abilities-api": "^0.1",
+        "wordpress/mcp-adapter": "^0.1",
+        "automattic/jetpack-autoloader": "^5.0"
+    },
+    "autoload": {
+        "classmap": ["includes/"]
+    },
+    "config": {
+        "allow-plugins": {
+            "automattic/jetpack-autoloader": true
+        }
+    }
+}
