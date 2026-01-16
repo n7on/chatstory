@@ -5,7 +5,7 @@
  * Handles enqueuing of CSS and JavaScript files.
  */
 
-namespace ChatStory;
+namespace ChatStory\Core;
 
 /**
  * Enqueue admin assets

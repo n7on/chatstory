@@ -54,24 +54,30 @@ Tell your company story through recorded team chat conversations. Create charact
 4. Click **Save Message**
 5. Repeat to build the conversation
 
-### 4. Preview Your Chat
+### 4. View Your Chat
 
-Before publishing, you can preview your chat in the context of your theme:
+To see how your chat looks:
 
-1. Click the **Preview** button next to any chat in the list, OR
-2. Click **Preview Chat** button while editing a chat
-3. The chat opens in a new tab showing exactly how visitors will see it
-4. Preview includes your theme's header, footer, and sidebar
+1. Make sure the chat status is set to "Published"
+2. Click the **View** button next to the chat in the list
+3. The chat opens at its permalink (e.g., `/chat/your-chat-slug/`)
+4. It displays with your theme's header, footer, and styling
 
 ### 5. Display Chat on Frontend
 
+**Embed in posts/pages:**
 Copy the shortcode shown in the chat editor (e.g., `[chatstory id="1"]`) and paste it into any post or page.
 
-The chat will display with playback controls:
-- **Start Chat** button to begin playback
-- **Pause/Resume** to control playback
-- **Speed selector** to adjust playback speed (0.5x, 1x, 1.5x, 2x)
-- Messages appear one by one with typing indicators
+**Show recent chats:**
+Use `[recent_chats]` to display a list of recent published chats. Optional parameters:
+- `[recent_chats limit="10"]` - Number of chats to show (default: 5)
+- `[recent_chats title="Latest Conversations"]` - Custom heading
+
+The chat will auto-play when loaded:
+- Messages appear one by one with timing
+- Typing indicators show when someone is typing
+- Reactions appear on messages
+- Join/leave events display
 - Automatic scrolling to show new messages
 
 ## JSON Import
@@ -85,7 +91,7 @@ Import complete chats with characters and messages:
 
 ### JSON Format
 
-See `sample-chat.json` and `sample-character.json` for a complete example. Basic structure:
+See `samples/sample-chat.json` and `samples/sample-characters.json` for complete examples. Basic structure:
 
 ## MCP Integration (AI Access)
 
@@ -170,6 +176,13 @@ Once configured, you can ask your AI assistant:
 - "Create a new chat titled 'Team Standup'"
 - "Add a message to chat #1 from character #2 saying 'Hello team!'"
 - "Show me all messages in chat #3"
+
+## Documentation
+
+For detailed architecture and integration guides, see:
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - Complete plugin architecture documentation
+- [`docs/THEME-INTEGRATION.md`](docs/THEME-INTEGRATION.md) - Theme integration guide
+- [`samples/`](samples/) - Sample JSON files for importing chats and characters
 
 ## Requirements
 

@@ -3,20 +3,18 @@
  * Plugin Name: ChatStory
  * Description: Tell your company story through recorded team chat conversations. Create characters and chat messages to showcase your team dynamics.
  * Version: 1.0.0
- * Author: Your Name
+ * Author: Anton Lindström
  * Text Domain: chatstory
  *
  * ARCHITECTURE: This plugin uses a functional, layered architecture with namespaces.
- * Read ARCHITECTURE.md for complete documentation.
+ * Read docs/ARCHITECTURE.md for complete documentation.
  *
  * Quick Overview:
+ * - core/        = Plugin foundation (hooks, database, assets)
+ * - admin/       = Admin UI integration (pages)
+ * - frontend/    = Public-facing integration (shortcodes, permalinks)
  * - data/        = Business logic (CRUD functions, NO WordPress coupling)
  * - api/         = External interfaces (REST API, MCP abilities)
- * - hooks.php    = ALL WordPress hooks in one place (routing table)
- * - database.php = Database schema
- * - assets.php   = Asset enqueuing
- * - pages.php    = Admin menu & page rendering
- * - shortcodes.php = Shortcode handlers
  * - views/       = Templates only (presentation)
  * - assets/      = Static files (CSS, JS)
  *
@@ -41,11 +39,16 @@ if (class_exists('WP\\MCP\\Core\\McpAdapter')) {
     }, 5);
 }
 
-// Load plugin components
-require_once CHATSTORY_PLUGIN_DIR . 'database.php';
-require_once CHATSTORY_PLUGIN_DIR . 'assets.php';
-require_once CHATSTORY_PLUGIN_DIR . 'pages.php';
-require_once CHATSTORY_PLUGIN_DIR . 'shortcodes.php';
+// Load core components
+require_once CHATSTORY_PLUGIN_DIR . 'core/database.php';
+require_once CHATSTORY_PLUGIN_DIR . 'core/assets.php';
+
+// Load admin components
+require_once CHATSTORY_PLUGIN_DIR . 'admin/pages.php';
+
+// Load frontend components
+require_once CHATSTORY_PLUGIN_DIR . 'frontend/shortcodes.php';
+require_once CHATSTORY_PLUGIN_DIR . 'frontend/permalinks.php';
 
 // Load data layer
 require_once CHATSTORY_PLUGIN_DIR . 'data/characters.php';
@@ -61,7 +64,7 @@ if (class_exists('WP\\MCP\\Core\\McpAdapter')) {
 }
 
 // Register all WordPress hooks
-require_once CHATSTORY_PLUGIN_DIR . 'hooks.php';
+require_once CHATSTORY_PLUGIN_DIR . 'core/hooks.php';
 
 // Load text domain for translations
 add_action('plugins_loaded', function() {

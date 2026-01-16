@@ -86,15 +86,21 @@ function register_routes() {
         ],
     ]);
 
-    register_rest_route($namespace, '/chats/(?P<id>\d+)/preview-url', [
-        'methods' => 'GET',
-        'callback' => __NAMESPACE__ . '\\get_preview_url',
-        'permission_callback' => __NAMESPACE__ . '\\check_permission',
-    ]);
-
     register_rest_route($namespace, '/chats/(?P<id>\d+)/frontend', [
         'methods' => 'GET',
         'callback' => __NAMESPACE__ . '\\get_chat_frontend',
+        'permission_callback' => '__return_true', // Public endpoint
+    ]);
+
+    register_rest_route($namespace, '/chats/published', [
+        'methods' => 'GET',
+        'callback' => __NAMESPACE__ . '\\get_published_chats_handler',
+        'permission_callback' => '__return_true', // Public endpoint
+    ]);
+
+    register_rest_route($namespace, '/chats/slug/(?P<slug>[a-z0-9-]+)', [
+        'methods' => 'GET',
+        'callback' => __NAMESPACE__ . '\\get_chat_by_slug_handler',
         'permission_callback' => '__return_true', // Public endpoint
     ]);
 
@@ -284,11 +290,6 @@ function delete_chat($request) {
     return rest_ensure_response(['success' => true, 'id' => $request['id']]);
 }
 
-function get_preview_url($request) {
-    $url = Data\get_preview_url($request['id']);
-    return rest_ensure_response(['url' => $url]);
-}
-
 function get_chat_frontend($request) {
     $result = Data\get_chat_for_frontend($request['id']);
     if (!$result) {
@@ -423,4 +424,25 @@ function delete_presence($request) {
         return $result;
     }
     return rest_ensure_response(['success' => true, 'id' => $request['id']]);
+}
+
+// === PUBLIC CHAT HANDLERS ===
+
+function get_published_chats_handler() {
+    return rest_ensure_response(Data\get_published_chats());
+}
+
+function get_chat_by_slug_handler($request) {
+    $chat = Data\get_chat_by_slug($request['slug']);
+    if (!$chat) {
+        return new \WP_Error('not_found', 'Chat not found', ['status' => 404]);
+    }
+
+    // Only return published chats or if user has permission
+    if ($chat->status !== 'published' && !current_user_can('manage_options')) {
+        return new \WP_Error('not_published', 'Chat is not published', ['status' => 404]);
+    }
+
+    $result = Data\get_chat_for_frontend($chat->id);
+    return rest_ensure_response($result);
 }

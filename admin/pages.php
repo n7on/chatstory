@@ -5,7 +5,7 @@
  * Handles admin menu registration and page rendering.
  */
 
-namespace ChatStory;
+namespace ChatStory\Admin;
 
 /**
  * Register admin menu
@@ -54,26 +54,3 @@ function render_characters_page() {
     include plugin_dir_path(CHATSTORY_PLUGIN_FILE) . 'views/admin-characters.php';
 }
 
-/**
- * Handle preview template redirect
- */
-function handle_preview() {
-    if (!isset($_GET['chatstory_preview']) || !isset($_GET['chat_id'])) {
-        return;
-    }
-
-    $chat_id = intval($_GET['chat_id']);
-    $nonce = isset($_GET['_wpnonce']) ? $_GET['_wpnonce'] : '';
-
-    if (!wp_verify_nonce($nonce, 'chatstory_preview_' . $chat_id)) {
-        wp_die(__('Invalid preview link', 'chatstory'));
-    }
-
-    if (!current_user_can('manage_options')) {
-        wp_die(__('You do not have permission to preview chats', 'chatstory'));
-    }
-
-    // Load the preview template
-    include plugin_dir_path(CHATSTORY_PLUGIN_FILE) . 'views/preview-template.php';
-    exit();
-}

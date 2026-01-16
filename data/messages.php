@@ -10,21 +10,21 @@ namespace ChatStory\Data\Messages;
 /**
  * Get all messages for a chat
  */
-function get_messages_by_chat($chat_id) {
+function get_messages_by_chat($post_id) {
     global $wpdb;
     $table_messages = $wpdb->prefix . 'chatstory_events';
     $table_characters = $wpdb->prefix . 'chatstory_characters';
 
     // Get message events
     $messages = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.created_at,
                 c.name, c.avatar, c.role
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'message'
+        WHERE e.post_id = %d AND e.event_type = 'message'
         ORDER BY e.start_time ASC",
-        $chat_id
+        $post_id
     ));
 
     // Transform events into message format
@@ -32,7 +32,7 @@ function get_messages_by_chat($chat_id) {
         $data = json_decode($message->event_data, true);
         return [
             'id' => (int) $message->id,
-            'chat_id' => (int) $message->chat_id,
+            'chat_id' => (int) $message->post_id, // For backwards compatibility
             'character_id' => (int) $message->character_id,
             'name' => $message->name,
             'avatar' => $message->avatar,
@@ -55,7 +55,7 @@ function get_message($id) {
     $table_characters = $wpdb->prefix . 'chatstory_characters';
 
     $message = $wpdb->get_row($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.created_at,
                 c.name, c.avatar, c.role
         FROM {$table_messages} e
@@ -71,7 +71,7 @@ function get_message($id) {
     $data = json_decode($message->event_data, true);
     return [
         'id' => (int) $message->id,
-        'chat_id' => (int) $message->chat_id,
+        'chat_id' => (int) $message->post_id, // For backwards compatibility
         'character_id' => (int) $message->character_id,
         'name' => $message->name,
         'avatar' => $message->avatar,
@@ -101,7 +101,7 @@ function create_message($data) {
     ]);
 
     $insert_data = [
-        'chat_id' => (int) $data['chat_id'],
+        'post_id' => (int) $data['chat_id'], // Accept chat_id for backwards compatibility
         'character_id' => (int) $data['character_id'],
         'event_type' => 'message',
         'start_time' => (float) ($data['start_time'] ?? 0),
@@ -212,7 +212,7 @@ function create_reaction($data) {
     ]);
 
     $insert_data = [
-        'chat_id' => (int) $data['chat_id'],
+        'post_id' => (int) $data['chat_id'], // Accept chat_id for backwards compatibility
         'character_id' => (int) $data['character_id'],
         'event_type' => 'reaction',
         'start_time' => (float) ($data['start_time'] ?? 0),
@@ -292,7 +292,7 @@ function create_typing($data) {
     ]);
 
     $insert_data = [
-        'chat_id' => (int) $data['chat_id'],
+        'post_id' => (int) $data['chat_id'], // Accept chat_id for backwards compatibility
         'character_id' => (int) $data['character_id'],
         'event_type' => 'typing',
         'start_time' => (float) ($data['start_time'] ?? 0),
@@ -372,7 +372,7 @@ function create_presence($data) {
     ]);
 
     $insert_data = [
-        'chat_id' => (int) $data['chat_id'],
+        'post_id' => (int) $data['chat_id'], // Accept chat_id for backwards compatibility
         'character_id' => (int) $data['character_id'],
         'event_type' => 'presence',
         'start_time' => (float) ($data['start_time'] ?? 0),

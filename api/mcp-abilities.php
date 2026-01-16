@@ -205,7 +205,9 @@ function register_chat_abilities() {
                 'properties' => [
                     'id' => ['type' => 'integer'],
                     'title' => ['type' => 'string'],
+                    'slug' => ['type' => 'string'],
                     'description' => ['type' => 'string'],
+                    'status' => ['type' => 'string'],
                     'created_at' => ['type' => 'string'],
                 ],
             ],
@@ -237,7 +239,9 @@ function register_chat_abilities() {
                     'properties' => [
                         'id' => ['type' => 'integer'],
                         'title' => ['type' => 'string'],
+                        'slug' => ['type' => 'string'],
                         'description' => ['type' => 'string'],
+                        'status' => ['type' => 'string'],
                         'created_at' => ['type' => 'string'],
                     ],
                 ],
@@ -290,7 +294,9 @@ function register_chat_abilities() {
             'type' => 'object',
             'properties' => [
                 'title' => ['type' => 'string', 'description' => 'Chat title (required)'],
+                'slug' => ['type' => 'string', 'description' => 'Chat slug (optional, auto-generated from title)'],
                 'description' => ['type' => 'string', 'description' => 'Chat description'],
+                'status' => ['type' => 'string', 'description' => 'Chat status: draft or published (default: draft)'],
             ],
             'required' => ['title'],
         ],
@@ -299,7 +305,9 @@ function register_chat_abilities() {
             'properties' => [
                 'id' => ['type' => 'integer'],
                 'title' => ['type' => 'string'],
+                'slug' => ['type' => 'string'],
                 'description' => ['type' => 'string'],
+                'status' => ['type' => 'string'],
             ],
         ],
         'execute_callback' => function($input) {
@@ -319,7 +327,9 @@ function register_chat_abilities() {
             'properties' => [
                 'id' => ['type' => 'integer', 'description' => 'Chat ID (required)'],
                 'title' => ['type' => 'string', 'description' => 'Chat title'],
+                'slug' => ['type' => 'string', 'description' => 'Chat slug'],
                 'description' => ['type' => 'string', 'description' => 'Chat description'],
+                'status' => ['type' => 'string', 'description' => 'Chat status: draft or published'],
             ],
             'required' => ['id'],
         ],
@@ -328,7 +338,9 @@ function register_chat_abilities() {
             'properties' => [
                 'id' => ['type' => 'integer'],
                 'title' => ['type' => 'string'],
+                'slug' => ['type' => 'string'],
                 'description' => ['type' => 'string'],
+                'status' => ['type' => 'string'],
             ],
         ],
         'execute_callback' => function($input) {

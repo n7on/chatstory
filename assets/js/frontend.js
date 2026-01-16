@@ -56,87 +56,25 @@ jQuery(document).ready(function ($) {
       return;
     }
 
-    // Add playback controls
-    const controls = $(`
-            <div class="chatstory-controls">
-                <button class="chatstory-play-btn" data-state="play">
-                    <span class="play-icon">▶</span>
-                    <span class="play-text">Start Chat</span>
-                </button>
-                <div class="chatstory-speed-control">
-                    <label>Speed:</label>
-                    <select class="chatstory-speed-select">
-                        <option value="0.5">0.5x</option>
-                        <option value="1" selected>1x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="2">2x</option>
-                    </select>
-                </div>
-            </div>
-        `);
-
-    messagesContainer.before(controls);
-
     // Store state
     container.data("messages", messages);
     container.data("reactions", reactions);
     container.data("typing_events", typing_events);
     container.data("presence_events", presence_events);
     container.data("isPlaying", false);
-    container.data("speed", 1);
+    container.data("speed", 1); // Fixed speed at 1x
     container.data("activeTimers", []);
     container.data("currentlyTyping", []);
 
-    // Handle play/pause button
-    controls.find(".chatstory-play-btn").on("click", function () {
-      const btn = $(this);
-      const state = btn.data("state");
-
-      if (state === "play") {
-        startPlayback(
-          container,
-          messagesContainer,
-          messages,
-          reactions,
-          typing_events,
-          presence_events,
-        );
-        btn.data("state", "pause");
-        btn.find(".play-icon").text("⏸");
-        btn.find(".play-text").text("Pause");
-      } else if (state === "pause") {
-        pausePlayback(container);
-        btn.data("state", "resume");
-        btn.find(".play-icon").text("▶");
-        btn.find(".play-text").text("Resume");
-      } else {
-        resumePlayback(
-          container,
-          messagesContainer,
-          messages,
-          reactions,
-          typing_events,
-          presence_events,
-        );
-        btn.data("state", "pause");
-        btn.find(".play-icon").text("⏸");
-        btn.find(".play-text").text("Pause");
-      }
-    });
-
-    // Handle speed change
-    controls.find(".chatstory-speed-select").on("change", function () {
-      const newSpeed = parseFloat($(this).val());
-      const oldSpeed = container.data("speed");
-      container.data("speed", newSpeed);
-
-      // Adjust active timers if playing
-      if (container.data("isPlaying")) {
-        const speedRatio = newSpeed / oldSpeed;
-        // Note: Adjusting live timers is complex, so we just store the new speed
-        // It will affect the next messages that start
-      }
-    });
+    // Auto-start playback
+    startPlayback(
+      container,
+      messagesContainer,
+      messages,
+      reactions,
+      typing_events,
+      presence_events,
+    );
   }
 
   function startPlayback(
@@ -235,17 +173,7 @@ jQuery(document).ready(function ($) {
           if (!container.data("isPlaying")) return;
           displayMessage(messagesContainer, message, index);
 
-          // Check if all messages are done
-          if (index === messages.length - 1) {
-            setTimeout(() => {
-              if (container.data("activeTimers").length === 0) {
-                container.find(".chatstory-play-btn").prop("disabled", true);
-                container
-                  .find(".chatstory-play-btn .play-text")
-                  .text("Chat Complete");
-              }
-            }, 500);
-          }
+          // Last message - no action needed since we removed the button
         },
         "message",
       );

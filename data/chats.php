@@ -3,6 +3,7 @@
  * Chat Data Layer
  *
  * Business logic for chat CRUD operations.
+ * Chats are stored as WordPress posts with post_type = 'chatstory'
  */
 
 namespace ChatStory\Data;
@@ -11,21 +12,45 @@ namespace ChatStory\Data;
  * Get all chats
  */
 function get_chats() {
-    global $wpdb;
-    $table = $wpdb->prefix . 'chatstory_chats';
-    return $wpdb->get_results("SELECT * FROM {$table} ORDER BY created_at DESC");
+    $posts = get_posts([
+        'post_type' => 'chatstory',
+        'post_status' => 'any',
+        'numberposts' => -1,
+        'orderby' => 'date',
+        'order' => 'DESC',
+    ]);
+
+    return array_map(function($post) {
+        return post_to_chat_object($post);
+    }, $posts);
 }
 
 /**
  * Get a single chat by ID
  */
 function get_chat($id) {
-    global $wpdb;
-    $table = $wpdb->prefix . 'chatstory_chats';
-    return $wpdb->get_row($wpdb->prepare(
-        "SELECT * FROM {$table} WHERE id = %d",
-        $id
-    ));
+    $post = get_post($id);
+
+    if (!$post || $post->post_type !== 'chatstory') {
+        return null;
+    }
+
+    return post_to_chat_object($post);
+}
+
+/**
+ * Convert WP_Post to chat object
+ */
+function post_to_chat_object($post) {
+    return (object) [
+        'id' => $post->ID,
+        'post_id' => $post->ID, // For backwards compatibility
+        'title' => $post->post_title,
+        'slug' => $post->post_name,
+        'description' => $post->post_excerpt,
+        'status' => ($post->post_status === 'publish') ? 'published' : 'draft',
+        'created_at' => $post->post_date,
+    ];
 }
 
 /**
@@ -44,48 +69,48 @@ function get_chat_with_messages($id) {
 
     // Get message events
     $messages = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.created_at,
                 c.name, c.avatar, c.role
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'message'
+        WHERE e.post_id = %d AND e.event_type = 'message'
         ORDER BY e.start_time ASC",
         $id
     ));
 
     // Get reaction events
     $reactions = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.target_event_id, e.created_at,
                 c.name
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'reaction'
+        WHERE e.post_id = %d AND e.event_type = 'reaction'
         ORDER BY e.start_time ASC",
         $id
     ));
 
     // Get typing events
     $typing_events = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.target_event_id, e.created_at,
                 c.name
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'typing'
+        WHERE e.post_id = %d AND e.event_type = 'typing'
         ORDER BY e.start_time ASC",
         $id
     ));
 
     // Get presence events
     $presence_events = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.created_at,
                 c.name, c.avatar, c.role
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'presence'
+        WHERE e.post_id = %d AND e.event_type = 'presence'
         ORDER BY e.start_time ASC",
         $id
     ));
@@ -95,7 +120,7 @@ function get_chat_with_messages($id) {
         $data = json_decode($message->event_data, true);
         return [
             'id' => (int) $message->id,
-            'chat_id' => (int) $message->chat_id,
+            'chat_id' => (int) $message->post_id, // For backwards compatibility
             'character_id' => (int) $message->character_id,
             'name' => $message->name,
             'avatar' => $message->avatar,
@@ -178,36 +203,38 @@ function get_chat_with_messages($id) {
  * Create a new chat
  */
 function create_chat($data) {
-    global $wpdb;
-    $table = $wpdb->prefix . 'chatstory_chats';
-
     // Validate required fields
     if (empty($data['title'])) {
         return new \WP_Error('missing_title', 'Chat title is required');
     }
 
-    // Prepare data
-    $insert_data = [
-        'title' => sanitize_text_field($data['title']),
-        'description' => sanitize_textarea_field($data['description'] ?? ''),
+    // Map custom status to WordPress post status
+    $status = sanitize_text_field($data['status'] ?? 'draft');
+    $post_status = ($status === 'published') ? 'publish' : 'draft';
+
+    // Create WordPress post
+    $post_data = [
+        'post_title' => sanitize_text_field($data['title']),
+        'post_name' => !empty($data['slug']) ? sanitize_title($data['slug']) : '',
+        'post_content' => '', // Will be populated by shortcode
+        'post_excerpt' => sanitize_textarea_field($data['description'] ?? ''),
+        'post_status' => $post_status,
+        'post_type' => 'chatstory',
     ];
 
-    $wpdb->insert($table, $insert_data);
+    $post_id = wp_insert_post($post_data, true);
 
-    if ($wpdb->last_error) {
-        return new \WP_Error('db_error', $wpdb->last_error);
+    if (is_wp_error($post_id)) {
+        return $post_id;
     }
 
-    return get_chat($wpdb->insert_id);
+    return get_chat($post_id);
 }
 
 /**
  * Update an existing chat
  */
 function update_chat($id, $data) {
-    global $wpdb;
-    $table = $wpdb->prefix . 'chatstory_chats';
-
     // Check if chat exists
     $chat = get_chat($id);
     if (!$chat) {
@@ -215,24 +242,36 @@ function update_chat($id, $data) {
     }
 
     // Prepare update data
-    $update_data = [];
+    $post_update_data = ['ID' => $id];
 
     if (isset($data['title'])) {
-        $update_data['title'] = sanitize_text_field($data['title']);
+        $post_update_data['post_title'] = sanitize_text_field($data['title']);
+    }
+
+    if (isset($data['slug'])) {
+        $post_update_data['post_name'] = sanitize_title($data['slug']);
     }
 
     if (isset($data['description'])) {
-        $update_data['description'] = sanitize_textarea_field($data['description']);
+        $post_update_data['post_excerpt'] = sanitize_textarea_field($data['description']);
     }
 
-    if (empty($update_data)) {
+    if (isset($data['status'])) {
+        $status = sanitize_text_field($data['status']);
+        if (!in_array($status, ['draft', 'published'])) {
+            return new \WP_Error('invalid_status', 'Status must be either "draft" or "published"');
+        }
+        $post_update_data['post_status'] = ($status === 'published') ? 'publish' : 'draft';
+    }
+
+    if (count($post_update_data) === 1) {
         return $chat; // Nothing to update
     }
 
-    $wpdb->update($table, $update_data, ['id' => $id]);
+    $result = wp_update_post($post_update_data, true);
 
-    if ($wpdb->last_error) {
-        return new \WP_Error('db_error', $wpdb->last_error);
+    if (is_wp_error($result)) {
+        return $result;
     }
 
     return get_chat($id);
@@ -243,7 +282,6 @@ function update_chat($id, $data) {
  */
 function delete_chat($id) {
     global $wpdb;
-    $table_chats = $wpdb->prefix . 'chatstory_chats';
     $table_messages = $wpdb->prefix . 'chatstory_events';
 
     // Check if chat exists
@@ -252,14 +290,14 @@ function delete_chat($id) {
         return new \WP_Error('not_found', 'Chat not found');
     }
 
-    // Delete all messages first
-    $wpdb->delete($table_messages, ['chat_id' => $id]);
+    // Delete all events/messages first
+    $wpdb->delete($table_messages, ['post_id' => $id]);
 
-    // Delete the chat
-    $result = $wpdb->delete($table_chats, ['id' => $id]);
+    // Delete WordPress post (force delete, skip trash)
+    $result = wp_delete_post($id, true);
 
-    if ($result === false) {
-        return new \WP_Error('db_error', $wpdb->last_error);
+    if (!$result) {
+        return new \WP_Error('delete_failed', 'Failed to delete chat');
     }
 
     return true;
@@ -281,48 +319,48 @@ function get_chat_for_frontend($id) {
 
     // Get message events
     $messages = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.created_at,
                 c.name, c.avatar, c.role
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'message'
+        WHERE e.post_id = %d AND e.event_type = 'message'
         ORDER BY e.start_time ASC",
         $id
     ));
 
     // Get reaction events
     $reactions = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.target_event_id, e.created_at,
                 c.name
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'reaction'
+        WHERE e.post_id = %d AND e.event_type = 'reaction'
         ORDER BY e.start_time ASC",
         $id
     ));
 
     // Get typing events
     $typing_events = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.target_event_id, e.created_at,
                 c.name
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'typing'
+        WHERE e.post_id = %d AND e.event_type = 'typing'
         ORDER BY e.start_time ASC",
         $id
     ));
 
     // Get presence events
     $presence_events = $wpdb->get_results($wpdb->prepare(
-        "SELECT e.id, e.chat_id, e.character_id, e.event_type, e.start_time,
+        "SELECT e.id, e.post_id, e.character_id, e.event_type, e.start_time,
                 e.event_data, e.created_at,
                 c.name, c.avatar, c.role
         FROM {$table_messages} e
         LEFT JOIN {$table_characters} c ON e.character_id = c.id
-        WHERE e.chat_id = %d AND e.event_type = 'presence'
+        WHERE e.post_id = %d AND e.event_type = 'presence'
         ORDER BY e.start_time ASC",
         $id
     ));
@@ -332,7 +370,7 @@ function get_chat_for_frontend($id) {
         $data = json_decode($message->event_data, true);
         return [
             'id' => (int) $message->id,
-            'chat_id' => (int) $message->chat_id,
+            'chat_id' => (int) $message->post_id, // For backwards compatibility
             'character_id' => (int) $message->character_id,
             'name' => $message->name,
             'avatar' => $message->avatar,
@@ -392,12 +430,45 @@ function get_chat_for_frontend($id) {
 }
 
 /**
- * Get preview URL for a chat
+ * Get a chat by slug
  */
-function get_preview_url($chat_id) {
-    return add_query_arg([
-        'chatstory_preview' => '1',
-        'chat_id' => $chat_id,
-        '_wpnonce' => wp_create_nonce('chatstory_preview_' . $chat_id),
-    ], home_url('/'));
+function get_chat_by_slug($slug) {
+    $post = get_page_by_path($slug, OBJECT, 'chatstory');
+
+    if (!$post) {
+        return null;
+    }
+
+    return post_to_chat_object($post);
+}
+
+/**
+ * Get all published chats
+ */
+function get_published_chats() {
+    $posts = get_posts([
+        'post_type' => 'chatstory',
+        'post_status' => 'publish',
+        'numberposts' => -1,
+        'orderby' => 'date',
+        'order' => 'DESC',
+    ]);
+
+    return array_map(function($post) {
+        return post_to_chat_object($post);
+    }, $posts);
+}
+
+/**
+ * Get the permalink URL for a chat
+ */
+function get_chat_permalink($chat) {
+    if (is_numeric($chat)) {
+        $chat = get_chat($chat);
+    }
+    if (!$chat) {
+        return '';
+    }
+
+    return get_permalink($chat->id);
 }

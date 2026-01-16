@@ -12,11 +12,17 @@ This plugin uses a **functional, layered architecture** with PHP namespaces. NO 
 chatstory/
 ├── chatstory.php          # Bootstrap ONLY - loads files, defines constants
 │
-├── hooks.php              # ROUTING TABLE - ALL WordPress hooks in one place
-├── database.php           # Database schema definition & activation
-├── assets.php             # Asset enqueuing (CSS/JS for admin + frontend)
-├── pages.php              # Admin menu registration & page rendering
-├── shortcodes.php         # Shortcode handlers
+├── core/                  # PLUGIN FOUNDATION
+│   ├── hooks.php          # ROUTING TABLE - ALL WordPress hooks in one place
+│   ├── database.php       # Database schema definition & activation
+│   └── assets.php         # Asset enqueuing (CSS/JS for admin + frontend)
+│
+├── admin/                 # ADMIN UI INTEGRATION
+│   └── pages.php          # Admin menu registration & page rendering
+│
+├── frontend/              # PUBLIC-FACING INTEGRATION
+│   ├── shortcodes.php     # Shortcode handlers
+│   └── permalinks.php     # Theme integration & content injection
 │
 ├── data/                  # BUSINESS LOGIC LAYER (namespace: ChatStory\Data)
 │   ├── characters.php     # Character CRUD functions (NO WordPress coupling)
@@ -30,8 +36,8 @@ chatstory/
 ├── views/                 # TEMPLATES ONLY (NO logic, just presentation)
 │   ├── admin-chats.php
 │   ├── admin-characters.php
-│   ├── frontend-chat.php
-│   └── preview-template.php
+│   ├── frontend-chat.php  # Used by shortcode
+│   └── recent-chats.php   # Recent chats shortcode template
 │
 └── assets/                # STATIC FILES ONLY
     ├── css/               # Stylesheets
@@ -95,6 +101,31 @@ JavaScript loads via ChatStory\enqueue_admin_assets() [assets.php]
     ↓
 JavaScript calls REST API endpoints to fetch/save data
 ```
+
+### Rendering Published Chat (Frontend)
+```
+User visits /chat/my-chat-slug/
+    ↓
+WordPress matches rewrite rule               [permalinks.php]
+    ↓
+ChatStory\setup_chat_query()                 [permalinks.php]
+    ├─ Fetch chat from database
+    ├─ Render chat content (description + shortcode)
+    ├─ Create virtual WP_Post object with content
+    └─ Setup WordPress query with virtual post
+    ↓
+ChatStory\include_chat_template()            [permalinks.php]
+    ├─ Check for theme override (chatstory-single.php)
+    └─ Fall back to theme's page.php template
+    ↓
+WordPress renders theme template (header, footer, navigation)
+    ↓
+Theme calls the_content() in loop
+    ↓
+Chat content appears (injected from virtual post)
+```
+
+**Key Innovation**: Virtual post system allows full theme integration without template files. The chat content is injected into WordPress's rendering pipeline, so ANY theme (classic or block) renders it with full header/footer/navigation.
 
 ## Critical Rules for Code Modifications
 

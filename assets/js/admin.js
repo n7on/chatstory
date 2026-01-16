@@ -133,18 +133,6 @@ jQuery(document).ready(function ($) {
       }
     });
 
-    $(document).on("click", ".preview-chat", function () {
-      const id = $(this).data("id");
-      previewChat(id);
-    });
-
-    $("#preview-current-chat-btn").on("click", function () {
-      const chatId = $("#chat-id").val();
-      if (chatId && chatId !== "0") {
-        previewChat(chatId);
-      }
-    });
-
     // Message modal
     $("#add-message-btn").on("click", function () {
       showMessageModal();
@@ -423,13 +411,21 @@ jQuery(document).ready(function ($) {
     }
 
     chats.forEach(function (chat) {
+      const statusBadge = chat.status === 'published'
+        ? '<span style="background:#46b450;color:#fff;padding:2px 8px;border-radius:3px;font-size:12px;">Published</span>'
+        : '<span style="background:#999;color:#fff;padding:2px 8px;border-radius:3px;font-size:12px;">Draft</span>';
+
+      const viewLink = chat.status === 'published' && chat.slug
+        ? `<a href="${ChatStoryAjax.home_url}chat/${chat.slug}/" target="_blank" class="button">View</a> `
+        : '';
+
       tbody.append(`
                 <tr>
                     <td><strong>${chat.title}</strong></td>
+                    <td>${statusBadge}</td>
                     <td>${chat.description || "-"}</td>
-                    <td>-</td>
                     <td class="action-buttons">
-                        <button class="button preview-chat" data-id="${chat.id}">Preview</button>
+                        ${viewLink}
                         <button class="button edit-chat" data-id="${chat.id}">Edit</button>
                         <button class="button delete-chat" data-id="${chat.id}">Delete</button>
                     </td>
@@ -445,13 +441,16 @@ jQuery(document).ready(function ($) {
       $("#chat-form-title").text("Edit Chat");
       $("#chat-id").val(chat.id);
       $("#chat-title").val(chat.title);
+      $("#chat-slug").val(chat.slug || '');
       $("#chat-description").val(chat.description);
+      $("#chat-status").val(chat.status || 'draft');
       $("#messages-section").show();
       loadMessages(chat.id);
     } else {
       $("#chat-form-title").text("Add Chat");
       $("#chat-edit-form")[0].reset();
       $("#chat-id").val("0");
+      $("#chat-status").val('draft');
       $("#messages-section").hide();
     }
   }
@@ -478,7 +477,9 @@ jQuery(document).ready(function ($) {
     const id = $("#chat-id").val();
     const data = {
       title: $("#chat-title").val(),
+      slug: $("#chat-slug").val(),
       description: $("#chat-description").val(),
+      status: $("#chat-status").val(),
     };
 
     const method = (id && id !== "0") ? 'PUT' : 'POST';
@@ -1052,20 +1053,6 @@ jQuery(document).ready(function ($) {
         console.error('Failed to import:', xhr);
         const message = xhr.responseJSON?.message || 'Unknown error';
         alert("Error: " + message);
-      });
-  }
-
-  // ==================== PREVIEW FUNCTIONS ====================
-  function previewChat(chatId) {
-    restApiCall(`chats/${chatId}/preview-url`, 'GET')
-      .done(function (response) {
-        if (response.url) {
-          window.open(response.url, "_blank");
-        }
-      })
-      .fail(function (xhr) {
-        console.error('Failed to get preview URL:', xhr);
-        alert('Error generating preview URL');
       });
   }
 

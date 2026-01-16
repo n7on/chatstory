@@ -21,8 +21,8 @@ if (!defined("ABSPATH")) {
                 <thead>
                     <tr>
                         <th><?php _e("Title", "chatstory"); ?></th>
+                        <th><?php _e("Status", "chatstory"); ?></th>
                         <th><?php _e("Description", "chatstory"); ?></th>
-                        <th><?php _e("Messages", "chatstory"); ?></th>
                         <th><?php _e("Actions", "chatstory"); ?></th>
                     </tr>
                 </thead>
@@ -49,6 +49,41 @@ if (!defined("ABSPATH")) {
                             "chatstory",
                         ); ?> *</label></th>
                         <td><input type="text" id="chat-title" class="regular-text" required></td>
+                    </tr>
+                    <tr>
+                        <th><label for="chat-slug"><?php _e(
+                            "Slug",
+                            "chatstory",
+                        ); ?></label></th>
+                        <td>
+                            <input type="text" id="chat-slug" class="regular-text">
+                            <p class="description"><?php _e(
+                                "URL-friendly version of the title. Leave empty to auto-generate.",
+                                "chatstory",
+                            ); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="chat-status"><?php _e(
+                            "Status",
+                            "chatstory",
+                        ); ?></label></th>
+                        <td>
+                            <select id="chat-status" class="regular-text">
+                                <option value="draft"><?php _e(
+                                    "Draft",
+                                    "chatstory",
+                                ); ?></option>
+                                <option value="published"><?php _e(
+                                    "Published",
+                                    "chatstory",
+                                ); ?></option>
+                            </select>
+                            <p class="description"><?php _e(
+                                "Published chats are visible to all visitors at /chat/slug/",
+                                "chatstory",
+                            ); ?></p>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="chat-description"><?php _e(
@@ -80,10 +115,6 @@ if (!defined("ABSPATH")) {
                         "Messages & Events",
                         "chatstory",
                     ); ?></h3>
-                    <button class="button" id="preview-current-chat-btn"><?php _e(
-                        "Preview Chat",
-                        "chatstory",
-                    ); ?></button>
                 </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <button class="button" id="add-message-btn"><?php _e(
@@ -237,14 +268,6 @@ Note: Characters must be imported separately before importing chats.</pre>
                         ); ?></button>
                     </p>
                 </form>
-            </div>
-        </div>
-
-        <div class="chatstory-modal chatstory-preview-modal" id="preview-modal" style="display: none;">
-            <div class="chatstory-modal-content chatstory-preview-content">
-                <span class="chatstory-modal-close">&times;</span>
-                <h2><?php _e("Chat Preview", "chatstory"); ?></h2>
-                <div id="preview-container"></div>
             </div>
         </div>
 
